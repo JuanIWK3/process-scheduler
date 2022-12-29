@@ -8,16 +8,20 @@ pub fn create_queue() -> Queue<FCFSProcess> {
 
     let p1 = FCFSProcess {
         name: String::from("p1"),
-        duration: 5,
+        duration: 10,
         has_interruption: true,
         time_spent: 0,
+        return_time: 0,
+        stopped: false,
     };
 
     let p2 = FCFSProcess {
         name: String::from("p2"),
-        duration: 3,
+        duration: 1,
         has_interruption: false,
         time_spent: 0,
+        return_time: 0,
+        stopped: false,
     };
 
     queue.add(p1).expect("Error adding to queue");

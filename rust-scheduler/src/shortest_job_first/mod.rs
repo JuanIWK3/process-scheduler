@@ -7,6 +7,8 @@ use std::{thread, time};
 pub mod list;
 
 pub fn init() {
+    println!("\n====== SHORTEST JOB FIRST ======");
+
     let mut processes = list::create();
 
     let mut time_elapsed = 0;
@@ -21,7 +23,6 @@ pub fn init() {
             let mut rng = thread_rng();
             let random: u32 = rng.gen();
             random_time = (random % (process.duration - 1)) + 1;
-            println!("{}", random_time);
         }
 
         for i in (process.time_spent)..=(process.duration.clone()) {
@@ -58,10 +59,7 @@ pub fn init() {
             }
 
             if &i == process.duration {
-                println!(
-                    "Process {} finished successfully at {time_elapsed}s!\n",
-                    process.name
-                );
+                println!("Process {} finished at {time_elapsed}s!\n", process.name);
                 continue;
             }
         }

@@ -4,6 +4,8 @@ pub struct FCFSProcess {
     pub duration: u32,
     pub has_interruption: bool,
     pub time_spent: u32,
+    pub return_time: u32,
+    pub stopped: bool,
 }
 
 #[derive(Debug, Clone)]
