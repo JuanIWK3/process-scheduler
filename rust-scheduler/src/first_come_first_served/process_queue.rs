@@ -7,8 +7,8 @@ pub fn create_queue() -> Queue<FCFSProcess> {
     let mut queue: Queue<FCFSProcess> = queue![];
 
     let p1 = FCFSProcess {
-        name: String::from("p1"),
-        duration: 10,
+        name: String::from("P1"),
+        duration: 6,
         has_interruption: true,
         time_spent: 0,
         return_time: 0,
@@ -16,8 +16,8 @@ pub fn create_queue() -> Queue<FCFSProcess> {
     };
 
     let p2 = FCFSProcess {
-        name: String::from("p2"),
-        duration: 1,
+        name: String::from("P2"),
+        duration: 2,
         has_interruption: false,
         time_spent: 0,
         return_time: 0,

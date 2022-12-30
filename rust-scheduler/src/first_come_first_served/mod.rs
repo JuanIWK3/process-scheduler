@@ -1,5 +1,6 @@
 extern crate queues;
 pub mod process_queue;
+use colored::Colorize;
 
 use crate::first_come_first_served::queues::IsQueue;
 use crate::process::FCFSProcess;
@@ -19,26 +20,26 @@ pub fn init() {
         let mut random_time = 0;
 
         if process.has_interruption {
-            let mut rng = thread_rng();
-            let random: u32 = rng.gen();
-            random_time = (random % (process.duration - 1)) + 1;
-        }
-
-        if process.time_spent > 0 {
-            println!(
-                "Returning process {} at time {}",
-                process.name, time_elapsed
-            );
+            random_time = thread_rng().gen_range(1..process.duration);
         }
 
         for i in (process.time_spent)..=(process.duration) {
             if process.stopped && process.return_time > time_elapsed {
-                println!("cannot return {} at time {}", process.name, time_elapsed);
+                println!(
+                    "{} Process {:?} will return in {} s...",
+                    format!("[Warn]").yellow(),
+                    process.name,
+                    process.return_time - time_elapsed
+                );
                 thread::sleep(time::Duration::from_secs(1));
                 time_elapsed += 1;
                 fcfs_queue.add(process).expect("Error adding");
 
                 break;
+            }
+
+            if process.stopped && (time_elapsed == process.return_time) {
+                println!("");
             }
 
             if process.stopped && process.return_time > time_elapsed {
@@ -52,14 +53,15 @@ pub fn init() {
 
             if i == 0 {
                 println!(
-                    "\nInitializing process {:?} at {time_elapsed}s",
+                    "\n{} process {:?} at {time_elapsed} s",
+                    format!("[Starting]").green(),
                     process.name
                 );
 
                 continue;
             }
 
-            println!("{} {i}", process.name);
+            println!("Process {:?} taking {i} s", process.name);
             thread::sleep(time::Duration::from_secs(1));
             time_elapsed += 1;
 
@@ -69,15 +71,19 @@ pub fn init() {
                 let interruption_time = 5;
 
                 println!(
-                    "interruption at {}s for {}s",
-                    random_time, interruption_time
+                    "\n{} Interruption at {} s for {} s",
+                    format!("[Warn]").yellow(),
+                    random_time,
+                    interruption_time
                 );
                 println!(
-                    "process can return at {}s",
+                    "{} Process can return at {} s",
+                    format!("[Warn]").yellow(),
                     time_elapsed + interruption_time
                 );
                 println!(
-                    "time remaining for process {}: {}s",
+                    "{} Time remaining for process {}: {} s",
+                    format!("[Warn]").yellow(),
                     process.name,
                     process.duration - i
                 );
@@ -96,7 +102,11 @@ pub fn init() {
             }
 
             if i == process.duration {
-                println!("Process {} finished at {time_elapsed}s!\n", process.name);
+                println!(
+                    "{} Process {:?} finished at {time_elapsed} s!\n",
+                    format!("[Finished]").green(),
+                    process.name
+                );
                 continue;
             }
         }
