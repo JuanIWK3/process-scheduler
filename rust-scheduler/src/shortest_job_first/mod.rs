@@ -1,69 +1,93 @@
-extern crate queues;
+use colored::Colorize;
+use std::{thread, time};
 
 use crate::process::SJFProcess;
-use rand::{thread_rng, Rng};
-use std::{thread, time};
 
 pub mod list;
 
 pub fn init() {
     println!("\n====== SHORTEST JOB FIRST ======");
 
-    let mut processes = list::create();
+    let mut list = list::create();
+    let mut complete: Vec<SJFProcess> = Vec::new();
+    let process_number = list.len();
 
     let mut time_elapsed = 0;
 
-    while processes.len() > 0 {
-        let process = processes.remove(0);
-        processes.sort_by_key(|d| d.duration);
+    while list.len() > 0 {
+        let process = list.remove(0);
 
-        let mut random_time = 0;
-
-        if process.has_interruption {
-            let mut rng = thread_rng();
-            let random: u32 = rng.gen();
-            random_time = (random % (process.duration - 1)) + 1;
+        if process.arrival_time > time_elapsed {
+            println!("Waiting...");
+            list.push(SJFProcess {
+                wait_time: process.wait_time + 1,
+                ..process
+            });
+            thread::sleep(time::Duration::from_secs(1));
+            time_elapsed += 1;
+            continue;
         }
 
-        for i in (process.time_spent)..=(process.duration.clone()) {
+        for i in 0..=(process.burst_time.clone()) {
             if i == 0 {
                 println!(
-                    "\nInitializing process {:?} at {time_elapsed}s",
+                    "\n{} process {:?} at {time_elapsed} s",
+                    format!("[Starting]").green(),
                     process.name
                 );
 
+                thread::sleep(time::Duration::from_secs(1));
+                time_elapsed += 1;
+
                 continue;
             }
 
-            println!("{} {i}", process.name);
+            if &i == process.burst_time {
+                println!("Process {:?} took {i} s!", process.name);
+
+                println!(
+                    "{} Process {:?} finished at {time_elapsed} s!",
+                    format!("[Finished]").green(),
+                    process.name
+                );
+                complete.push(SJFProcess {
+                    completion_time: time_elapsed,
+                    ..process.clone()
+                });
+                continue;
+            }
+
+            println!("Process {:?} taking {i} s", process.name);
             thread::sleep(time::Duration::from_secs(1));
             time_elapsed += 1;
-
-            if process.has_interruption && i == random_time {
-                println!("interruption at: {}s", random_time);
-                println!(
-                    "time remaining for process {}: {}s",
-                    process.name,
-                    process.duration - i
-                );
-
-                let updated_process = SJFProcess {
-                    has_interruption: false,
-                    time_spent: i + 1,
-                    ..process.clone()
-                };
-
-                processes.push(updated_process);
-
-                break;
-            }
-
-            if &i == process.duration {
-                println!("Process {} finished at {time_elapsed}s!\n", process.name);
-                continue;
-            }
         }
     }
 
-    println!("{}", time_elapsed);
+    println!("\nTime elapsed: {} s\n", time_elapsed);
+
+    println!("Process\tArrival\tBurst\tCompletion\tTurnaround\tWaiting");
+
+    let mut total_turnaround_time = 0;
+    let mut total_waiting_time = 0;
+
+    for process in complete {
+        println!(
+            "{}\t{}\t{}\t{}\t\t{}\t\t{}",
+            process.name,
+            process.arrival_time,
+            process.burst_time,
+            process.completion_time,
+            process.completion_time - process.arrival_time,
+            process.completion_time - process.burst_time
+        );
+
+        total_turnaround_time += process.completion_time - process.arrival_time;
+        total_waiting_time += process.completion_time - process.burst_time;
+    }
+
+    println!(
+        "\nAverage Turnaround Time: {:?}",
+        total_turnaround_time / process_number
+    );
+    println!("Average Waiting Time: {:?}", total_waiting_time)
 }

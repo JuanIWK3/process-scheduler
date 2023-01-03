@@ -1,29 +1,66 @@
-// use crate::process::SRTProcess;
+use colored::Colorize;
+use std::{thread, time};
+
+pub mod list;
 
 pub fn init() {
-    // let mut processes: Vec<SRTProcess> = Vec::new();
+    println!("\n====== SHORTEST JOB FIRST ======");
 
-    // let p1 = SRTProcess {
-    //     name: String::from("P1"),
-    //     duration: &5,
-    //     has_interruption: true,
-    //     time_spent: 0,
-    // };
+    let mut list = list::create();
+    let process_number = list.len();
 
-    // let p2 = SRTProcess {
-    //     name: String::from("P1"),
-    //     duration: &5,
-    //     has_interruption: true,
-    //     time_spent: 0,
-    // };
+    let mut time_elapsed = 0;
+    let mut idle = 0;
+    let mut turnaround_time = 0;
 
-    // processes.push(p1);
-    // processes.push(p2);
+    while list.len() > 0 {
+        let process = list.remove(0);
 
-    // while processes.len() > 0 {
-    //     let process = processes.remove(0);
-    //     for i in process.time_spent..process.duration.clone() {
-    //         println!("{}", i);
-    //     }
-    // }
+        if process.arrival_time > time_elapsed {
+            println!("Waiting...");
+            list.push(process);
+            thread::sleep(time::Duration::from_secs(1));
+            time_elapsed += 1;
+            idle += 1;
+            continue;
+        }
+
+        for i in process.burst_time - process.remaining_time..=(process.burst_time.clone()) {
+            if i == 0 {
+                println!(
+                    "\n{} process {:?} at {time_elapsed} s",
+                    format!("[Starting]").green(),
+                    process.name
+                );
+
+                thread::sleep(time::Duration::from_secs(1));
+                time_elapsed += 1;
+
+                continue;
+            }
+
+            if &i == process.burst_time {
+                println!("Process {:?} took {i} s!", process.name);
+
+                println!(
+                    "{} Process {:?} finished at {time_elapsed} s!\n",
+                    format!("[Finished]").green(),
+                    process.name
+                );
+                turnaround_time += time_elapsed - process.arrival_time;
+                continue;
+            }
+
+            println!("Process {:?} taking {i} s", process.name);
+            thread::sleep(time::Duration::from_secs(1));
+            time_elapsed += 1;
+        }
+    }
+
+    println!("Time elapsed: {} s", time_elapsed);
+    println!("Idle time: {} s", idle);
+    println!(
+        "Average Turnaround time: {} s",
+        turnaround_time / process_number
+    );
 }

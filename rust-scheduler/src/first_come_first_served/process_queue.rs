@@ -1,31 +1,49 @@
-extern crate queues;
-use queues::*;
-
 use crate::process::FCFSProcess;
 
-pub fn create_queue() -> Queue<FCFSProcess> {
-    let mut queue: Queue<FCFSProcess> = queue![];
+pub fn create_queue() -> Vec<FCFSProcess> {
+    let mut queue: Vec<FCFSProcess> = Vec::new();
 
     let p1 = FCFSProcess {
         name: String::from("P1"),
-        duration: 6,
+        burst_time: 5,
+        arrival_time: 0,
+        completion_time: 0,
+        wait_time: 0,
         has_interruption: true,
-        time_spent: 0,
+        is_interrupted: false,
         return_time: 0,
-        stopped: false,
+        time_spent: 0,
     };
 
     let p2 = FCFSProcess {
         name: String::from("P2"),
-        duration: 2,
+        burst_time: 1,
+        arrival_time: 0,
+        completion_time: 0,
+        wait_time: 0,
         has_interruption: false,
-        time_spent: 0,
+        is_interrupted: false,
         return_time: 0,
-        stopped: false,
+        time_spent: 0,
     };
 
-    queue.add(p1).expect("Error adding to queue");
-    queue.add(p2).expect("Error adding to queue");
+    let p3 = FCFSProcess {
+        name: String::from("P3"),
+        burst_time: 1,
+        arrival_time: 0,
+        completion_time: 0,
+        wait_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+    };
+
+    queue.push(p1);
+    queue.push(p2);
+    queue.push(p3);
+
+    queue.sort_by_key(|d| d.arrival_time);
 
     queue
 }

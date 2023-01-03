@@ -1,17 +1,32 @@
 #[derive(Debug, Clone)]
 pub struct FCFSProcess {
     pub name: String,
-    pub duration: u32,
+    pub arrival_time: usize,
+    pub burst_time: usize,
+    pub completion_time: usize,
+    pub wait_time: usize,
     pub has_interruption: bool,
-    pub time_spent: u32,
-    pub return_time: u32,
-    pub stopped: bool,
+    pub is_interrupted: bool,
+    pub return_time: usize,
+    pub time_spent: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct SJFProcess<'a> {
     pub name: String,
-    pub duration: &'a u32,
+    pub arrival_time: usize,
+    pub burst_time: &'a usize,
+    pub completion_time: usize,
+    pub wait_time: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct SRTProcess<'a> {
+    pub name: String,
+    pub arrival_time: usize,
+    pub remaining_time: &'a usize,
+    pub burst_time: &'a usize,
     pub has_interruption: bool,
-    pub time_spent: u32,
+    pub stopped: bool,
+    pub return_time: usize,
 }
