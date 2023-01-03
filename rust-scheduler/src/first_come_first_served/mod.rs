@@ -55,7 +55,6 @@ pub fn init() {
 
         // Handle the process execution
         for i in (process.time_spent)..=(process.burst_time) {
-            println!("at time {}", time_elapsed);
             if i == 0 {
                 println!(
                     "\n{} process {:?} at {time_elapsed} s",
