@@ -1,0 +1,17 @@
+{
+  "files.associations": {
+    "bit": "cpp",
+    "ctime": "cpp",
+    "limits": "cpp",
+    "xlocale": "cpp",
+    "xlocinfo": "cpp",
+    "iostream": "cpp",
+    "vector": "cpp",
+    "ostream": "cpp",
+    "queue": "cpp",
+    "algorithm": "cpp",
+    "memory": "cpp",
+    "ranges": "cpp",
+    "xlocnum": "cpp"
+  }
+}

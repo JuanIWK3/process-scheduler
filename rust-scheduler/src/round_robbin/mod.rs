@@ -7,21 +7,22 @@ use std::{thread, time};
 use crate::process::Process;
 
 pub fn init() {
-    println!("\n====== FIRST COME FIRST SERVED ======");
+    println!("\n====== ROUND ROBBIN ======");
 
-    let mut fcfs_queue = process_queue::create_queue();
+    let mut list = process_queue::create_queue();
     let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
-    let process_quantity = fcfs_queue.len();
+    let process_quantity = list.len();
+    let quantum = 2;
 
-    while fcfs_queue.len() > 0 {
-        let process = fcfs_queue.remove(0);
+    while list.len() > 0 {
+        let process = list.remove(0);
 
         if process.is_interrupted && process.return_time > time_elapsed {
             println!("Waiting for process to return...");
             thread::sleep(time::Duration::from_secs(1));
             time_elapsed += 1;
-            fcfs_queue.push(Process {
+            list.push(Process {
                 wait_time: process.wait_time + 1,
                 ..process
             });
@@ -33,7 +34,7 @@ pub fn init() {
             println!("Waiting...");
             thread::sleep(time::Duration::from_secs(1));
             time_elapsed += 1;
-            fcfs_queue.push(Process {
+            list.push(Process {
                 wait_time: process.wait_time + 1,
                 ..process
             });
@@ -48,10 +49,14 @@ pub fn init() {
 
         if process.time_spent > 0 {
             println!(
-                "Returning process {} at time {}",
-                process.name, time_elapsed
+                "\n{} process {} at time {}",
+                format!("[Returning]").green(),
+                process.name,
+                time_elapsed
             );
         }
+
+        let mut quantum_count: usize = 0;
 
         // Handle the process execution
         for i in (process.time_spent)..=(*process.burst_time) {
@@ -61,9 +66,6 @@ pub fn init() {
                     format!("[Starting]").green(),
                     process.name
                 );
-
-                thread::sleep(time::Duration::from_secs(1));
-                time_elapsed += 1;
 
                 continue;
             }
@@ -78,7 +80,7 @@ pub fn init() {
                 );
                 thread::sleep(time::Duration::from_secs(1));
                 time_elapsed += 1;
-                fcfs_queue.push(process);
+                list.push(process);
 
                 break;
             }
@@ -120,7 +122,7 @@ pub fn init() {
                     ..process.clone()
                 };
 
-                fcfs_queue.push(updated_process);
+                list.push(updated_process);
 
                 break;
             }
@@ -132,7 +134,7 @@ pub fn init() {
                 println!("Process {:?} took {i} s!", process.name);
 
                 println!(
-                    "{} Process {:?} finished at {time_elapsed} s!\n",
+                    "{} Process {:?} finished at {time_elapsed} s!",
                     format!("[Finished]").green(),
                     process.name
                 );
@@ -146,6 +148,18 @@ pub fn init() {
             println!("Process {:?} taking {i} s", process.name);
             time_elapsed += 1;
             thread::sleep(time::Duration::from_secs(1));
+
+            quantum_count += 1;
+
+            if quantum_count == quantum {
+                let updated_process = Process {
+                    time_spent: i + 1,
+                    ..process.clone()
+                };
+
+                list.push(updated_process);
+                break;
+            }
         }
     }
 

@@ -8,14 +8,14 @@ use crate::process::Process;
 pub mod list;
 
 pub fn init() {
-    println!("\n====== SHORTEST REMAINING TIME ======");
+    println!("\n====== DULLING ======");
 
     let mut list = list::create();
     let mut time_elapsed = 0;
     let mut random_interruption_time = 0;
 
     while list.len() > 0 {
-        list.sort_by_key(|d| (d.burst_time - d.time_spent));
+        list.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
 
         let process = match find_process(&list, time_elapsed) {
             Some(index) => list.remove(index),
@@ -23,7 +23,7 @@ pub fn init() {
         };
 
         if process.is_interrupted && process.return_time > time_elapsed {
-            println!("Waiting for process to return... {}", time_elapsed);
+            println!("Waiting for process to return...");
             thread::sleep(Duration::from_secs(1));
             time_elapsed += 1;
             list.push(Process {
@@ -61,33 +61,7 @@ pub fn init() {
         }
 
         for time in (process.time_spent)..=(process.burst_time.clone()) {
-            list.sort_by_key(|d| (d.burst_time - d.time_spent));
-
-            match find_faster_process(&list, time_elapsed, &process, time) {
-                Some(index) => {
-                    list.push(Process {
-                        time_spent: time,
-                        ..process.clone()
-                    });
-
-                    println!(
-                        "{} Process {} interrupted by process {}: {} s",
-                        format!("[Warn]").yellow(),
-                        process.name,
-                        list[index].name,
-                        list[index].burst_time - list[0].time_spent
-                    );
-
-                    println!(
-                        "{} Remaining time for {} is {} s",
-                        format!("[Warn]").yellow(),
-                        process.name,
-                        process.burst_time - time
-                    );
-                    break;
-                }
-                None => (),
-            };
+            list.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
 
             if time == 0 {
                 start_process(&process, &mut time_elapsed);
@@ -102,6 +76,7 @@ pub fn init() {
             if process.has_interruption && time == random_interruption_time {
                 // let mut rng = thread_rng();
                 // let interruption_time: u32 = rng.gen::<u32>() % process.duration + 1;
+                time_elapsed += 1;
 
                 let interruption_time = 2;
                 println!("Process {:?} taking {} s", process.name, time);
@@ -114,7 +89,7 @@ pub fn init() {
                 println!(
                     "{} Process can return at {} s",
                     format!("[Warn]").yellow(),
-                    time_elapsed + interruption_time
+                    time_elapsed + interruption_time - 1
                 );
                 println!(
                     "{} Time remaining for process {}: {} s",
@@ -152,7 +127,6 @@ fn start_process(process: &Process, time_elapsed: &mut usize) {
         process.name
     );
 
-    // thread::sleep(time::Duration::from_secs(1));
     *time_elapsed += 1;
 }
 
@@ -164,30 +138,13 @@ fn end_process(process: &Process, time_elapsed: &mut usize, current_time: &usize
         format!("[Finished]").green(),
         process.name
     );
+
+    *time_elapsed += 1;
 }
 
 fn find_process(list: &Vec<Process>, time_elapsed: usize) -> Option<usize> {
     for i in 0..list.len() {
-        if list[i].arrival_time <= time_elapsed && list[i].return_time <= time_elapsed {
-            println!("Found {}", list[i].name);
-            return Some(i);
-        }
-    }
-
-    None
-}
-
-fn find_faster_process(
-    list: &Vec<Process>,
-    time_elapsed: usize,
-    current_process: &Process,
-    time: usize,
-) -> Option<usize> {
-    for i in 0..list.len() {
-        if list[i].arrival_time <= time_elapsed
-            && list[i].burst_time - list[i].time_spent < current_process.burst_time - time
-            && list[i].return_time <= time_elapsed
-        {
+        if list[i].arrival_time <= time_elapsed && !list[i].is_interrupted {
             return Some(i);
         }
     }

@@ -5,20 +5,7 @@ pub fn create_queue() -> Vec<Process<'static>> {
 
     let p1 = Process {
         name: String::from("P1"),
-        burst_time: &5,
-        arrival_time: 0,
-        completion_time: 0,
-        wait_time: 0,
-        has_interruption: true,
-        is_interrupted: false,
-        return_time: 0,
-        time_spent: 0,
-        stopped: false,
-    };
-
-    let p2 = Process {
-        name: String::from("P2"),
-        burst_time: &1,
+        burst_time: &3,
         arrival_time: 0,
         completion_time: 0,
         wait_time: 0,
@@ -29,9 +16,22 @@ pub fn create_queue() -> Vec<Process<'static>> {
         stopped: false,
     };
 
+    let p2 = Process {
+        name: String::from("P2"),
+        burst_time: &4,
+        arrival_time: 0,
+        completion_time: 0,
+        wait_time: 0,
+        has_interruption: true,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+    };
+
     let p3 = Process {
         name: String::from("P3"),
-        burst_time: &1,
+        burst_time: &5,
         arrival_time: 0,
         completion_time: 0,
         wait_time: 0,

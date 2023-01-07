@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <algorithm>
+#include <stdio.h>
 
 #ifdef __unix__
 #include <unistd.h>
@@ -13,101 +15,182 @@ using namespace std;
 
 struct Process
 {
-    int id;
-    int time;
-    int seconds_completed;
+    string name;
+    int arrival_time;
+    int burst_time;
+    int time_spent;
     bool has_interruption;
-    int interruption_time;
+    bool is_interrupted;
+    int return_time;
 
-    Process(int id, int time, bool has_interruption, int interruption_time)
+    Process(string name, int arrival_time, int burst_time, int time_spent, bool has_interruption, bool is_interrupted, int return_time)
     {
-        this->id = id;
-        this->time = time;
+        this->name = name;
+        this->arrival_time = arrival_time;
+        this->burst_time = burst_time;
+        this->time_spent = time_spent;
         this->has_interruption = has_interruption;
-        this->interruption_time = interruption_time;
-        this->seconds_completed = 0;
+        this->is_interrupted = is_interrupted;
+        this->return_time = return_time;
+    }
+
+    int getTime() const
+    {
+        return burst_time;
     }
 };
 
-void print_process(Process *process)
+bool sort_by_time(Process *p1, Process *p2)
 {
-    cout << "\nExecuting process #" << process->id << endl;
-    cout << "Process duration: " << process->time << " seconds" << endl;
-    cout << "Time remaining: " << process->time - process->seconds_completed << " seconds" << endl;
+    return p1->getTime() < p2->getTime();
 }
 
-void execute_process(Process *process, queue<Process *> *process_queue)
+int find_process(vector<Process *> list, int *time_elapsed)
 {
-    print_process(process);
-
-    srand(time(NULL));
-    int time_of_interruption = rand() % process->time;
-
-    for (int i = 0 + process->seconds_completed; i <= process->time; i++)
+    for (int i = 0; i < list.size(); i++)
     {
-        if (i == time_of_interruption && process->has_interruption)
+        if (list[i]->arrival_time <= *time_elapsed)
         {
-            sleep(1);
-            cout << "\n\nWARN: Interruption at " << i << " seconds!" << endl;
-            process->seconds_completed = i;
-            process->has_interruption = false;
-            process_queue->push(process);
-            process_queue->pop();
-            return;
-        }
-        else if (i == 0)
-        {
-            cout << "0%";
-        }
-        else
-        {
-            sleep(1);
-            cout << "\r" << (double)i / process->time * 100 << "%           ";
+            return i;
         }
     }
 
-    cout << endl;
-    process_queue->pop();
+    return 0;
 }
 
-void first_come_first_served(queue<Process *> process_queue)
+int find_faster_process(vector<Process *> list, int *time_elapsed, Process *current_process, int time)
 {
-    while (!process_queue.empty())
+    for (int i = 0; i < list.size(); i++)
     {
-        execute_process(process_queue.front(), &process_queue);
+        if (list[i]->arrival_time < *time_elapsed && list[i]->burst_time - list[i]->time_spent < current_process->burst_time - time)
+        {
+            return i;
+        }
     }
+
+    return -1;
 }
 
 int main()
 {
-    int quantity = 2;
+    std::vector<Process *> list;
 
-    queue<Process *> process_queue;
+    list.push_back(new Process("P1", 0, 8, 0, true, false, 0));
+    // list.push_back(new Process("P2", 0, 8, 0, false, false, 0));
+    // list.push_back(new Process("P1", 0, 1, 0));
+    // list.push_back(new Process("P2", 0, 2, 0));
+    // list.push_back(new Process("P3", 0, 3, 0));
+    // list.push_back(new Process("P4", 0, 4, 0));
+    // list.push_back(new Process("P5", 0, 5, 0));
+    // list.push_back(new Process("P6", 0, 6, 0));
+    // list.push_back(new Process("P7", 16, 1, 0));
+    // list.push_back(new Process("P8", 16, 2, 0));
+    // list.push_back(new Process("P9", 16, 3, 0));
+    // list.push_back(new Process("P10", 16, 4, 0));
+    // list.push_back(new Process("P11", 27, 1, 0));
+    // list.push_back(new Process("P12", 27, 2, 0));
+    // list.push_back(new Process("P13", 27, 3, 0));
 
-    for (int i = 0; i < quantity; i++)
+    int time_elapsed = 0;
+
+    while (!list.empty())
     {
-        int process_time;
-        bool has_interruption;
-        int interruption_time = 0;
+        sort(list.begin(), list.end(), sort_by_time);
 
-        cout << "time: ";
-        cin >> process_time;
-        cin.ignore();
-        cout << "has interruption? ";
-        cin >> has_interruption;
-        cin.ignore();
+        int index = find_process(list, &time_elapsed);
 
-        if (has_interruption)
+        Process *process = list.at(index);
+
+        list.erase(list.begin() + index);
+
+        if (process->is_interrupted && process->return_time > time_elapsed)
         {
-            srand(time(NULL));
-            interruption_time = rand() % 10;
+            cout << "Waiting for process to return..." << endl;
+            sleep(1);
+            time_elapsed++;
+
+            list.push_back(process);
+
+            continue;
         }
 
-        Process *process = new Process(i, process_time, has_interruption, interruption_time);
-        process_queue.push(process);
+        if (process->arrival_time > time_elapsed)
+        {
+            cout << "Process not ready" << endl;
+
+            sleep(1);
+            time_elapsed++;
+
+            list.push_back(process);
+
+            continue;
+        }
+
+        if (process->time_spent > 0)
+        {
+            cout << "\nResuming process '" << process->name << "' at " << time_elapsed << " s" << endl;
+        }
+
+        for (int time = process->time_spent; time <= process->burst_time; time++)
+        {
+            sort(list.begin(), list.end(), sort_by_time);
+
+            int faster_index = find_faster_process(list, &time_elapsed, process, time);
+
+            if (faster_index == -1)
+            {
+            }
+            else
+            {
+                cout << "Found faster process: '" << faster_index << "'" << endl;
+
+                cout << "Process '" << process->name << "' interrupted!" << endl;
+
+                cout << "Remaining time for '" << process->name << "' is " << process->burst_time - time << " s" << endl;
+
+                list.push_back(new Process(process->name, process->arrival_time, process->burst_time, time, process->has_interruption, process->is_interrupted, process->return_time));
+
+                break;
+            }
+
+            if (time == 0)
+            {
+                cout << "\nStarting process '" << process->name << "' at " << time_elapsed << " s..." << endl;
+                time_elapsed++;
+                continue;
+            }
+
+            if (time == process->burst_time)
+            {
+                time_elapsed++;
+                cout << "Process '" << process->name << "' took " << time << " s!" << endl;
+                cout << "Finished process '" << process->name << "' at " << time_elapsed << " s..." << endl;
+                continue;
+            }
+
+            // ! Change interruption time later
+            if (process->has_interruption && time == 2)
+            {
+
+                int interruption_time = 2;
+
+                cout << "Process taking " << time << " s" << endl;
+                cout << "Interruption at 2 s for 2s" << endl;
+                cout << "Process can return at " << time_elapsed + interruption_time << " s" << endl;
+                cout << "Time remaining: " << process->burst_time - time << " s" << endl;
+
+                Process *updated_process = new Process(process->name, process->arrival_time, process->burst_time, time + 1, false, true, time_elapsed + interruption_time);
+
+                list.push_back(updated_process);
+
+                break;
+            }
+
+            cout << "Process '" << process->name << "' taking " << time << " s" << endl;
+            sleep(1);
+            time_elapsed++;
+        }
     }
 
-    first_come_first_served(process_queue);
-
-    return 0;
+    cout << "\nTotal time elapsed: " << time_elapsed << " s" << endl;
 }

@@ -2,7 +2,7 @@ use colored::Colorize;
 use rand::{thread_rng, Rng};
 use std::{thread, time};
 
-use crate::process::SJFProcess;
+use crate::process::Process;
 
 pub mod list;
 
@@ -10,7 +10,7 @@ pub fn init() {
     println!("\n====== SHORTEST JOB FIRST ======");
 
     let mut list = list::create();
-    let mut complete: Vec<SJFProcess> = Vec::new();
+    let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
     let process_quantity = list.len();
 
@@ -23,7 +23,7 @@ pub fn init() {
             println!("Waiting for process to return...");
             thread::sleep(time::Duration::from_secs(1));
             time_elapsed += 1;
-            list.push(SJFProcess {
+            list.push(Process {
                 wait_time: process.wait_time + 1,
                 ..process
             });
@@ -33,7 +33,7 @@ pub fn init() {
         // See if the process is ready
         if process.arrival_time > time_elapsed {
             println!("Waiting...");
-            list.push(SJFProcess {
+            list.push(Process {
                 wait_time: process.wait_time + 1,
                 ..process
             });
@@ -116,7 +116,7 @@ pub fn init() {
                     process.burst_time - i
                 );
 
-                let updated_process = SJFProcess {
+                let updated_process = Process {
                     has_interruption: false,
                     time_spent: i + 1,
                     is_interrupted: true,
@@ -137,7 +137,7 @@ pub fn init() {
                     format!("[Finished]").green(),
                     process.name
                 );
-                complete.push(SJFProcess {
+                complete.push(Process {
                     completion_time: time_elapsed,
                     ..process.clone()
                 });
