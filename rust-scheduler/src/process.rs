@@ -72,7 +72,7 @@ impl Process<'static> {
 
     pub fn interrupt(
         &self,
-        random_interruption_time: &usize,
+        _random_interruption_time: &usize,
         time_elapsed: &usize,
         time: &usize,
         list: &mut Vec<Process<'static>>,

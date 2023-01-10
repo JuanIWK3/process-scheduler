@@ -1,7 +1,6 @@
 use std::{thread, time::Duration};
 
 use colored::Colorize;
-use rand::{thread_rng, Rng};
 
 use crate::process::{print_table, Process};
 
@@ -13,7 +12,7 @@ pub fn init() {
     let mut list = list::create();
     let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
-    let mut random_interruption_time = 0;
+    let mut _random_interruption_time = 0;
     let process_quantity = list.len();
 
     while list.len() > 0 {
@@ -51,7 +50,7 @@ pub fn init() {
             }
 
             if process.has_interruption && time == process.interruption_time {
-                process.interrupt(&random_interruption_time, &time_elapsed, &time, &mut list);
+                process.interrupt(&_random_interruption_time, &time_elapsed, &time, &mut list);
                 break;
             }
 

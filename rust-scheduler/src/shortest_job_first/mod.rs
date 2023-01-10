@@ -1,4 +1,3 @@
-use rand::{thread_rng, Rng};
 use std::{thread, time::Duration};
 
 use crate::process::{print_table, Process};
@@ -12,7 +11,7 @@ pub fn init() {
     let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
     let process_quantity = list.len();
-    let mut random_time = 0;
+    let mut _random_time = 0;
 
     while list.len() > 0 {
         list.sort_by_key(|d| d.burst_time);
@@ -32,7 +31,7 @@ pub fn init() {
             continue;
         }
 
-        let mut random_interruption_time = 0;
+        let mut _random_interruption_time = 0;
 
         // if process.has_interruption {
         //     random_interruption_time = thread_rng().gen_range(1..*process.burst_time);
@@ -49,7 +48,7 @@ pub fn init() {
             }
 
             if process.has_interruption && time == process.interruption_time {
-                process.interrupt(&random_time, &time_elapsed, &time, &mut list);
+                process.interrupt(&_random_time, &time_elapsed, &time, &mut list);
                 break;
             }
 
