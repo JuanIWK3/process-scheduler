@@ -2,7 +2,7 @@ use core::time;
 use std::{thread, time::Duration};
 
 use colored::Colorize;
-use rand::{thread_rng, Rng};
+// use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone)]
 pub struct Process<'a> {
@@ -16,6 +16,8 @@ pub struct Process<'a> {
     pub time_spent: usize,
     pub completion_time: usize,
     pub priority: i32,
+    pub interruption_time: usize,
+    pub interruption_duration: usize,
 }
 
 impl Process<'static> {
@@ -75,16 +77,16 @@ impl Process<'static> {
         time: &usize,
         list: &mut Vec<Process<'static>>,
     ) {
-        let mut rng = thread_rng();
-        let interruption_duration = rng.gen::<usize>() % self.burst_time + 1;
-        // let interruption_time = 4;
+        // let mut rng = thread_rng();
+        // let interruption_duration = rng.gen::<usize>() % self.burst_time + 1;
+        let interruption_duration = self.interruption_duration;
 
         println!("Process {:?} taking {} s", self.name, time);
         println!(
             "\n{} Interruption at {} s for {} s",
             format!("[Warn]").yellow(),
-            random_interruption_time,
-            interruption_duration
+            self.interruption_time,
+            self.interruption_duration
         );
 
         println!(

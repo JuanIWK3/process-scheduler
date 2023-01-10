@@ -50,14 +50,13 @@ pub fn init() {
                 break;
             }
 
+            println!("Process {:?} taking {time} s", process.name);
+            thread::sleep(time::Duration::from_secs(1));
+
             if &time == process.burst_time {
                 process.end(&mut time_elapsed, &mut complete);
                 continue;
             }
-
-            println!("Process {:?} taking {time} s", process.name);
-            time_elapsed += 1;
-            thread::sleep(time::Duration::from_secs(1));
 
             quantum_count += 1;
 
@@ -70,6 +69,8 @@ pub fn init() {
                 list.push(updated_process);
                 break;
             }
+
+            time_elapsed += 1;
         }
     }
 

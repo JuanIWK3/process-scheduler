@@ -1,5 +1,5 @@
 pub mod list;
-use rand::{thread_rng, Rng};
+// use rand::{thread_rng, Rng};
 
 use std::{thread, time::Duration};
 
@@ -12,6 +12,7 @@ pub fn init() {
     let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
     let process_quantity = list.len();
+    let mut random_time = 0;
 
     while list.len() > 0 {
         let process = list.remove(0);
@@ -26,11 +27,9 @@ pub fn init() {
             continue;
         }
 
-        let mut random_time = 0;
-
-        if process.has_interruption {
-            random_time = thread_rng().gen_range(1..*process.burst_time);
-        }
+        // if process.has_interruption {
+        //     random_time = thread_rng().gen_range(1..*process.burst_time);
+        // }
 
         if process.time_spent > 0 {
             process.resume(&mut time_elapsed);
@@ -42,12 +41,13 @@ pub fn init() {
                 continue;
             }
 
-            if process.has_interruption && time == random_time {
+            if process.has_interruption && time == process.interruption_time {
                 process.interrupt(&random_time, &time_elapsed, &time, &mut list);
                 break;
             }
 
             println!("Process {:?} taking {} s", process.name, time);
+            thread::sleep(Duration::from_secs(1));
 
             if time == *process.burst_time {
                 process.end(&mut time_elapsed, &mut complete);
@@ -55,7 +55,6 @@ pub fn init() {
             }
 
             time_elapsed += 1;
-            thread::sleep(Duration::from_secs(1));
         }
     }
 

@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 
 use colored::Colorize;
-use rand::{thread_rng, Rng};
+// use rand::{thread_rng, Rng};
 
 use crate::process::{print_table, Process};
 
@@ -38,11 +38,29 @@ pub fn init() {
             process.resume(&mut time_elapsed);
         }
 
-        if process.has_interruption {
-            random_interruption_time = thread_rng().gen_range(1..*process.burst_time);
-        }
+        // if process.has_interruption {
+        //     random_interruption_time = thread_rng().gen_range(1..*process.burst_time);
+        // }
 
         for time in (process.time_spent)..=(process.burst_time.clone()) {
+            if time == 0 {
+                process.start(&mut time_elapsed);
+                continue;
+            }
+
+            if process.has_interruption && time == process.interruption_time {
+                process.interrupt(&random_interruption_time, &time_elapsed, &time, &mut list);
+                break;
+            }
+
+            println!("Process {:?} taking {} s", process.name, time);
+            thread::sleep(Duration::from_secs(1));
+
+            if &time == process.burst_time {
+                process.end(&mut time_elapsed, &mut complete);
+                continue;
+            }
+
             match find_higher_priority_process(&list, time_elapsed, &process) {
                 Some(index) => {
                     list.push(Process {
@@ -67,26 +85,9 @@ pub fn init() {
                     );
                     break;
                 }
+
                 None => (),
             };
-
-            if time == 0 {
-                process.start(&mut time_elapsed);
-                continue;
-            }
-
-            if process.has_interruption && time == random_interruption_time {
-                process.interrupt(&random_interruption_time, &time_elapsed, &time, &mut list);
-                break;
-            }
-
-            println!("Process {:?} taking {} s", process.name, time);
-            thread::sleep(Duration::from_secs(1));
-
-            if &time == process.burst_time {
-                process.end(&mut time_elapsed, &mut complete);
-                continue;
-            }
 
             time_elapsed += 1;
         }

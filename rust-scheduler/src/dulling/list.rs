@@ -1,48 +1,83 @@
 use crate::process::Process;
 
 pub fn create() -> Vec<Process<'static>> {
-    let mut processes: Vec<Process> = Vec::new();
-    processes.push(Process {
-        name: String::from("p0"),
+    let mut list: Vec<Process> = Vec::new();
+
+    list.push(Process {
+        name: String::from("P1"),
+        burst_time: &10,
         arrival_time: 0,
-        burst_time: &1,
-        has_interruption: false,
-        stopped: false,
-        return_time: 0,
-        is_interrupted: false,
-        time_spent: 0,
-   
         completion_time: 0,
-        priority: 5,
-    });
-    processes.push(Process {
-        name: String::from("p2"),
-        arrival_time: 0,
-        burst_time: &2,
         has_interruption: true,
-        stopped: false,
-        return_time: 0,
         is_interrupted: false,
+        return_time: 0,
         time_spent: 0,
-      
-        completion_time: 0,
-        priority: -4,
+        stopped: false,
+        priority: 3,
+        interruption_time: 3,
+        interruption_duration: 2,
     });
-    processes.push(Process {
-        name: String::from("p3"),
-        arrival_time: 0,
-        burst_time: &3,
+
+    list.push(Process {
+        name: String::from("P2"),
+        burst_time: &1,
+        arrival_time: 1,
+        completion_time: 0,
         has_interruption: false,
-        stopped: false,
-        return_time: 0,
         is_interrupted: false,
+        return_time: 0,
         time_spent: 0,
-      
-        completion_time: 0,
-        priority: 2,
+        stopped: false,
+        priority: 1,
+        interruption_time: 0,
+        interruption_duration: 0,
     });
 
-    processes.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
+    list.push(Process {
+        name: String::from("P3"),
+        burst_time: &2,
+        arrival_time: 2,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 3,
+        interruption_time: 0,
+        interruption_duration: 0,
+    });
+    list.push(Process {
+        name: String::from("P4"),
+        burst_time: &1,
+        arrival_time: 3,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 4,
+        interruption_time: 0,
+        interruption_duration: 0,
+    });
 
-    processes
+    list.push(Process {
+        name: String::from("P5"),
+        burst_time: &5,
+        arrival_time: 4,
+        completion_time: 0,
+        has_interruption: true,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 2,
+        interruption_time: 2,
+        interruption_duration: 2,
+    });
+
+    list.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
+
+    list
 }

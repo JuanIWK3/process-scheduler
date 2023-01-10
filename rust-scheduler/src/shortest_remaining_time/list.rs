@@ -2,189 +2,83 @@ use crate::process::Process;
 
 // ! Don' create a process that lasts shorter than 1 second with interruption
 pub fn create() -> Vec<Process<'static>> {
-    let mut processes: Vec<Process> = Vec::new();
-    processes.push(Process {
-        name: String::from("p0"),
+    let mut list: Vec<Process> = Vec::new();
+
+    list.push(Process {
+        name: String::from("P1"),
+        burst_time: &10,
         arrival_time: 0,
-        burst_time: &4,
+        completion_time: 0,
         has_interruption: true,
-        stopped: false,
-        return_time: 0,
         is_interrupted: false,
-        time_spent: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p1"),
-        arrival_time: 0,
-        burst_time: &5,
-        has_interruption: false,
-        stopped: false,
         return_time: 0,
-        is_interrupted: false,
         time_spent: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p2"),
-        arrival_time: 0,
-        burst_time: &7,
-        has_interruption: false,
         stopped: false,
-        return_time: 0,
-        is_interrupted: false,
-        time_spent: 0,
-        completion_time: 0,
         priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p1"),
-        arrival_time: 0,
-        burst_time: &2,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p2"),
-        arrival_time: 0,
-        burst_time: &3,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p3"),
-        arrival_time: 0,
-        burst_time: &4,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p4"),
-        arrival_time: 0,
-        burst_time: &5,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p5"),
-        arrival_time: 0,
-        burst_time: &6,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p6"),
-        arrival_time: 16,
-        burst_time: &1,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p7"),
-        arrival_time: 16,
-        burst_time: &2,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p8"),
-        arrival_time: 16,
-        burst_time: &3,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p9"),
-        arrival_time: 16,
-        burst_time: &4,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p10"),
-        arrival_time: 27,
-        burst_time: &1,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p11"),
-        arrival_time: 27,
-        burst_time: &2,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
-    });
-    processes.push(Process {
-        name: String::from("p11"),
-        arrival_time: 27,
-        burst_time: &3,
-        has_interruption: false,
-        stopped: false,
-        is_interrupted: false,
-        time_spent: 0,
-        return_time: 0,
-        completion_time: 0,
-        priority: 0,
+        interruption_time: 3,
+        interruption_duration: 2,
     });
 
-    processes.sort_by_key(|d| (d.burst_time - d.time_spent));
+    list.push(Process {
+        name: String::from("P2"),
+        burst_time: &1,
+        arrival_time: 1,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 0,
+        interruption_time: 0,
+        interruption_duration: 0,
+    });
 
-    processes
+    list.push(Process {
+        name: String::from("P3"),
+        burst_time: &2,
+        arrival_time: 2,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 0,
+        interruption_time: 0,
+        interruption_duration: 0,
+    });
+    list.push(Process {
+        name: String::from("P4"),
+        burst_time: &1,
+        arrival_time: 3,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 0,
+        interruption_time: 0,
+        interruption_duration: 0,
+    });
+
+    list.push(Process {
+        name: String::from("P5"),
+        burst_time: &5,
+        arrival_time: 4,
+        completion_time: 0,
+        has_interruption: true,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 0,
+        interruption_time: 2,
+        interruption_duration: 2,
+    });
+
+    list.sort_by_key(|d| (d.burst_time - d.time_spent));
+
+    list
 }
