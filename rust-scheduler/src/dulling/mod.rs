@@ -3,19 +3,21 @@ use std::{thread, time::Duration};
 use colored::Colorize;
 use rand::{thread_rng, Rng};
 
-use crate::process::Process;
+use crate::process::{print_table, Process};
 
 pub mod list;
 
 pub fn init() {
-    println!("\n====== DULLING ======");
+    println!("\n====== Priority Scheduler ======");
 
     let mut list = list::create();
+    let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
     let mut random_interruption_time = 0;
+    let process_quantity = list.len();
 
     while list.len() > 0 {
-        list.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
+        list.sort_by_key(|d| (d.priority));
 
         let process = match find_process(&list, time_elapsed) {
             Some(index) => list.remove(index),
@@ -23,37 +25,17 @@ pub fn init() {
         };
 
         if process.is_interrupted && process.return_time > time_elapsed {
-            println!("Waiting for process to return...");
-            thread::sleep(Duration::from_secs(1));
-            time_elapsed += 1;
-            list.push(Process {
-                wait_time: process.wait_time + 1,
-                ..process
-            });
+            process.wait_interruption(&mut time_elapsed, &mut list);
             continue;
         }
 
         if process.arrival_time > time_elapsed {
-            println!("Process not ready");
-
-            if false {
-            } else {
-                thread::sleep(Duration::from_secs(1));
-                time_elapsed += 1;
-            }
-
-            list.push(process);
-
+            process.wait_arrival(&mut time_elapsed, &mut list);
             continue;
         }
 
         if process.time_spent > 0 {
-            println!(
-                "\n{} process {} at {} s",
-                format!("[Resuming]").green(),
-                process.name,
-                time_elapsed
-            );
+            process.resume(&mut time_elapsed);
         }
 
         if process.has_interruption {
@@ -61,90 +43,78 @@ pub fn init() {
         }
 
         for time in (process.time_spent)..=(process.burst_time.clone()) {
-            list.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
+            match find_higher_priority_process(&list, time_elapsed, &process) {
+                Some(index) => {
+                    list.push(Process {
+                        time_spent: time + 1,
+                        ..process.clone()
+                    });
+
+                    println!(
+                        "{} Process {} with priority {} interrupted by process {}: priority {}",
+                        format!("[Warn]").yellow(),
+                        process.name,
+                        process.priority,
+                        list[index].name,
+                        list[index].priority
+                    );
+
+                    println!(
+                        "{} Remaining time for {} is {} s",
+                        format!("[Warn]").yellow(),
+                        process.name,
+                        process.burst_time - time
+                    );
+                    break;
+                }
+                None => (),
+            };
 
             if time == 0 {
-                start_process(&process, &mut time_elapsed);
-                continue;
-            }
-
-            if &time == process.burst_time {
-                end_process(&process, &mut time_elapsed, &time);
+                process.start(&mut time_elapsed);
                 continue;
             }
 
             if process.has_interruption && time == random_interruption_time {
-                // let mut rng = thread_rng();
-                // let interruption_time: u32 = rng.gen::<u32>() % process.duration + 1;
-                time_elapsed += 1;
-
-                let interruption_time = 2;
-                println!("Process {:?} taking {} s", process.name, time);
-                println!(
-                    "\n{} Interruption at {} s for {} s",
-                    format!("[Warn]").yellow(),
-                    random_interruption_time,
-                    interruption_time
-                );
-                println!(
-                    "{} Process can return at {} s",
-                    format!("[Warn]").yellow(),
-                    time_elapsed + interruption_time - 1
-                );
-                println!(
-                    "{} Time remaining for process {}: {} s",
-                    format!("[Warn]").yellow(),
-                    process.name,
-                    process.burst_time - time
-                );
-
-                let updated_process = Process {
-                    has_interruption: false,
-                    time_spent: time,
-                    is_interrupted: true,
-                    return_time: time_elapsed + interruption_time,
-                    ..process.clone()
-                };
-
-                list.push(updated_process);
-
+                process.interrupt(&random_interruption_time, &time_elapsed, &time, &mut list);
                 break;
             }
 
             println!("Process {:?} taking {} s", process.name, time);
             thread::sleep(Duration::from_secs(1));
+
+            if &time == process.burst_time {
+                process.end(&mut time_elapsed, &mut complete);
+                continue;
+            }
+
             time_elapsed += 1;
         }
     }
 
-    println!("\nTime elapsed: {} s", time_elapsed);
-}
-
-fn start_process(process: &Process, time_elapsed: &mut usize) {
-    println!(
-        "\n{} process {:?} at {time_elapsed} s",
-        format!("[Starting]").green(),
-        process.name
-    );
-
-    *time_elapsed += 1;
-}
-
-fn end_process(process: &Process, time_elapsed: &mut usize, current_time: &usize) {
-    println!("Process {:?} took {current_time} s!", process.name);
-
-    println!(
-        "{} Process {:?} finished at {time_elapsed} s!",
-        format!("[Finished]").green(),
-        process.name
-    );
-
-    *time_elapsed += 1;
+    print_table(&time_elapsed, &mut complete, &process_quantity);
 }
 
 fn find_process(list: &Vec<Process>, time_elapsed: usize) -> Option<usize> {
     for i in 0..list.len() {
-        if list[i].arrival_time <= time_elapsed && !list[i].is_interrupted {
+        if list[i].arrival_time <= time_elapsed && list[i].return_time <= time_elapsed {
+            return Some(i);
+        }
+    }
+
+    None
+}
+
+fn find_higher_priority_process(
+    list: &Vec<Process>,
+    time_elapsed: usize,
+    current_process: &Process,
+) -> Option<usize> {
+    for i in 0..list.len() {
+        if list[i].arrival_time <= time_elapsed
+            && list[i].priority < current_process.priority
+            && list[i].return_time <= time_elapsed
+        {
             return Some(i);
         }
     }

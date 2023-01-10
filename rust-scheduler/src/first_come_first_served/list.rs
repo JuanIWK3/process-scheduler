@@ -1,52 +1,48 @@
 use crate::process::Process;
 
 pub fn create_queue() -> Vec<Process<'static>> {
-    let mut queue: Vec<Process> = Vec::new();
+    let mut list: Vec<Process> = Vec::new();
 
-    let p1 = Process {
+    list.push(Process {
         name: String::from("P1"),
-        burst_time: &3,
+        burst_time: &5,
         arrival_time: 0,
         completion_time: 0,
-        wait_time: 0,
-        has_interruption: false,
-        is_interrupted: false,
-        return_time: 0,
-        time_spent: 0,
-        stopped: false,
-    };
-
-    let p2 = Process {
-        name: String::from("P2"),
-        burst_time: &4,
-        arrival_time: 0,
-        completion_time: 0,
-        wait_time: 0,
         has_interruption: true,
         is_interrupted: false,
         return_time: 0,
         time_spent: 0,
         stopped: false,
-    };
+        priority: 0,
+    });
 
-    let p3 = Process {
-        name: String::from("P3"),
-        burst_time: &5,
+    list.push(Process {
+        name: String::from("P2"),
+        burst_time: &1,
         arrival_time: 0,
         completion_time: 0,
-        wait_time: 0,
         has_interruption: false,
         is_interrupted: false,
         return_time: 0,
         time_spent: 0,
         stopped: false,
-    };
+        priority: 0,
+    });
 
-    queue.push(p1);
-    queue.push(p2);
-    queue.push(p3);
+    list.push(Process {
+        name: String::from("P3"),
+        burst_time: &1,
+        arrival_time: 0,
+        completion_time: 0,
+        has_interruption: false,
+        is_interrupted: false,
+        return_time: 0,
+        time_spent: 0,
+        stopped: false,
+        priority: 0,
+    });
 
-    queue.sort_by_key(|d| d.arrival_time);
+    list.sort_by_key(|d| d.arrival_time);
 
-    queue
+    list
 }

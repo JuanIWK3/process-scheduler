@@ -1,17 +1,17 @@
-pub mod process_queue;
-use colored::Colorize;
+pub mod list;
 use rand::{thread_rng, Rng};
 
 use std::{thread, time};
 
-use crate::process::Process;
+use crate::process::{print_table, Process};
 
 pub fn init() {
     println!("\n====== ROUND ROBBIN ======");
 
-    let mut list = process_queue::create_queue();
+    let mut list = list::create_queue();
     let mut complete: Vec<Process> = Vec::new();
     let mut time_elapsed = 0;
+    let mut random_interruption_time = 0;
     let process_quantity = list.len();
     let quantum = 2;
 
@@ -19,133 +19,43 @@ pub fn init() {
         let process = list.remove(0);
 
         if process.is_interrupted && process.return_time > time_elapsed {
-            println!("Waiting for process to return...");
-            thread::sleep(time::Duration::from_secs(1));
-            time_elapsed += 1;
-            list.push(Process {
-                wait_time: process.wait_time + 1,
-                ..process
-            });
+            process.wait_interruption(&mut time_elapsed, &mut list);
             continue;
         }
 
-        // See if the process is ready
         if process.arrival_time > time_elapsed {
-            println!("Waiting...");
-            thread::sleep(time::Duration::from_secs(1));
-            time_elapsed += 1;
-            list.push(Process {
-                wait_time: process.wait_time + 1,
-                ..process
-            });
+            process.wait_arrival(&mut time_elapsed, &mut list);
             continue;
-        }
-
-        let mut random_time = 0;
-
-        if process.has_interruption {
-            random_time = thread_rng().gen_range(1..*process.burst_time);
         }
 
         if process.time_spent > 0 {
-            println!(
-                "\n{} process {} at time {}",
-                format!("[Returning]").green(),
-                process.name,
-                time_elapsed
-            );
+            process.resume(&mut time_elapsed);
+        }
+
+        if process.has_interruption {
+            random_interruption_time = thread_rng().gen_range(1..*process.burst_time);
         }
 
         let mut quantum_count: usize = 0;
 
         // Handle the process execution
-        for i in (process.time_spent)..=(*process.burst_time) {
-            if i == 0 {
-                println!(
-                    "\n{} process {:?} at {time_elapsed} s",
-                    format!("[Starting]").green(),
-                    process.name
-                );
-
+        for time in (process.time_spent)..=(*process.burst_time) {
+            if time == 0 {
+                process.start(&mut time_elapsed);
                 continue;
             }
 
-            // Wait for the process return
-            if process.is_interrupted && process.return_time > time_elapsed {
-                println!(
-                    "{} Process {:?} will return in {} s...",
-                    format!("[Warn]").yellow(),
-                    process.name,
-                    process.return_time - time_elapsed
-                );
-                thread::sleep(time::Duration::from_secs(1));
-                time_elapsed += 1;
-                list.push(process);
-
+            if process.has_interruption && time == random_interruption_time {
+                process.interrupt(&random_interruption_time, &time_elapsed, &time, &mut list);
                 break;
             }
 
-            // Jump to the next line when the process is ready to return
-            if process.is_interrupted && (time_elapsed == process.return_time) {
-                println!("");
-            }
-
-            if process.has_interruption && i == random_time {
-                // let mut rng = thread_rng();
-                // let interruption_time: u32 = rng.gen::<u32>() % process.duration + 1;
-                let interruption_time = 4;
-
-                println!("Process {:?} taking {i} s", process.name);
-                println!(
-                    "\n{} Interruption at {} s for {} s",
-                    format!("[Warn]").yellow(),
-                    random_time,
-                    interruption_time
-                );
-                println!(
-                    "{} Process can return at {} s",
-                    format!("[Warn]").yellow(),
-                    time_elapsed + interruption_time
-                );
-                println!(
-                    "{} Time remaining for process {}: {} s",
-                    format!("[Warn]").yellow(),
-                    process.name,
-                    process.burst_time - i
-                );
-
-                let updated_process = Process {
-                    has_interruption: false,
-                    time_spent: i + 1,
-                    is_interrupted: true,
-                    return_time: time_elapsed + interruption_time,
-                    ..process.clone()
-                };
-
-                list.push(updated_process);
-
-                break;
-            }
-
-            if i == *process.burst_time {
-                time_elapsed += 1;
-                thread::sleep(time::Duration::from_secs(1));
-
-                println!("Process {:?} took {i} s!", process.name);
-
-                println!(
-                    "{} Process {:?} finished at {time_elapsed} s!",
-                    format!("[Finished]").green(),
-                    process.name
-                );
-                complete.push(Process {
-                    completion_time: time_elapsed,
-                    ..process.clone()
-                });
+            if &time == process.burst_time {
+                process.end(&mut time_elapsed, &mut complete);
                 continue;
             }
 
-            println!("Process {:?} taking {i} s", process.name);
+            println!("Process {:?} taking {time} s", process.name);
             time_elapsed += 1;
             thread::sleep(time::Duration::from_secs(1));
 
@@ -153,7 +63,7 @@ pub fn init() {
 
             if quantum_count == quantum {
                 let updated_process = Process {
-                    time_spent: i + 1,
+                    time_spent: time + 1,
                     ..process.clone()
                 };
 
@@ -163,33 +73,5 @@ pub fn init() {
         }
     }
 
-    // Print complete table
-
-    println!("Time elapsed: {} s\n", time_elapsed);
-
-    println!("Process\tArrival\tBurst\tCompletion\tTurnaround\tWaiting");
-
-    let mut total_turnaround_time = 0;
-    let mut total_waiting_time = 0;
-
-    for process in complete {
-        println!(
-            "{}\t{}\t{}\t{}\t\t{}\t\t{}",
-            process.name,
-            process.arrival_time,
-            process.burst_time,
-            process.completion_time,
-            process.completion_time - process.arrival_time,
-            process.wait_time
-        );
-
-        total_turnaround_time += process.completion_time - process.arrival_time;
-        total_waiting_time += process.wait_time;
-    }
-
-    println!(
-        "\nAverage Turnaround Time: {:?}",
-        total_turnaround_time / process_quantity
-    );
-    println!("Average Waiting Time: {:?}", total_waiting_time)
+    print_table(&time_elapsed, &mut complete, &process_quantity);
 }

@@ -11,8 +11,9 @@ pub fn create() -> Vec<Process<'static>> {
         return_time: 0,
         is_interrupted: false,
         time_spent: 0,
-        wait_time: 0,
+   
         completion_time: 0,
+        priority: 5,
     });
     processes.push(Process {
         name: String::from("p2"),
@@ -23,8 +24,9 @@ pub fn create() -> Vec<Process<'static>> {
         return_time: 0,
         is_interrupted: false,
         time_spent: 0,
-        wait_time: 0,
+      
         completion_time: 0,
+        priority: -4,
     });
     processes.push(Process {
         name: String::from("p3"),
@@ -35,8 +37,9 @@ pub fn create() -> Vec<Process<'static>> {
         return_time: 0,
         is_interrupted: false,
         time_spent: 0,
-        wait_time: 0,
+      
         completion_time: 0,
+        priority: 2,
     });
 
     processes.sort_by_key(|d| std::cmp::Reverse(d.burst_time));
